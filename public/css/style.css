@@ -1,3 +1,25 @@
+
+
+
+
+
+/* Main CSS file that imports all other CSS files */
+
+/* Base styles */
+@import 'main.css';
+
+/* Component styles */
+@import 'header.css';
+@import 'footer.css';
+@import 'home.css';
+
+/* Add other CSS imports as needed */
+
+
+
+
+
+
 /* Basic styling for the entire website */
 body {
     font-family: Arial, sans-serif;

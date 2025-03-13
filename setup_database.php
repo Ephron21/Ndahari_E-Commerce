@@ -93,22 +93,20 @@ if (!tableExists($conn, 'jobs')) {
     $sql = "CREATE TABLE jobs (
         id INT(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
         employer_id INT(11) UNSIGNED NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        description TEXT NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        job_type ENUM('part-time', 'one-time', 'contract', 'seasonal') NOT NULL,
+        job_title VARCHAR(255) NOT NULL,
+        job_description TEXT NOT NULL,
+        job_type VARCHAR(50) NOT NULL,
         location VARCHAR(255) NOT NULL,
-        salary_range VARCHAR(100),
-        requirements TEXT,
+        salary_range VARCHAR(100) NOT NULL,
+        requirements TEXT NOT NULL,
         responsibilities TEXT,
         application_deadline DATE,
-        posted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        status ENUM('open', 'closed', 'draft', 'expired') DEFAULT 'open',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        status VARCHAR(20) DEFAULT 'active',
         is_featured TINYINT(1) DEFAULT 0,
-        views INT(11) DEFAULT 0,
         FOREIGN KEY (employer_id) REFERENCES employers(id) ON DELETE CASCADE
-    )";
-    
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
     runQuery($conn, $sql, "create jobs table");
 }
 
@@ -195,13 +193,13 @@ if ($row['count'] == 0) {
         $today = date('Y-m-d');
         $deadline = date('Y-m-d', strtotime('+30 days'));
         
-        $sql = "INSERT INTO jobs (employer_id, title, description, category, job_type, location, salary_range, requirements, responsibilities, application_deadline, is_featured) VALUES
-            ({$employers[0]}, 'Weekend Barista', 'Looking for a talented barista to join our weekend team. Experience with espresso machines and latte art preferred.', 'hospitality', 'part-time', 'Kigali', '50,000-70,000 RWF/month', 'Previous experience as barista, Customer service skills, Ability to work weekends', 'Prepare coffee drinks, Maintain cleanliness, Handle customer orders', '$deadline', 1),
-            ({$employers[1]}, 'Junior Web Developer', 'Need a part-time web developer to assist with ongoing projects. Knowledge of HTML, CSS, and JavaScript required.', 'technology', 'contract', 'Kigali', '100,000-150,000 RWF/month', 'HTML/CSS/JavaScript skills, Basic understanding of PHP or Python, Portfolio of previous work', 'Develop website features, Debug code, Implement responsive designs', '$deadline', 1),
-            ({$employers[2]}, 'Retail Sales Associate', 'Seeking friendly and reliable sales associates for our busy retail store. Perfect for students or those seeking part-time work.', 'retail', 'part-time', 'Nyanza', '40,000-60,000 RWF/month', 'Strong communication skills, Basic math abilities, Availability on weekends', 'Assist customers, Operate cash register, Restock merchandise', '$deadline', 1),
-            ({$employers[0]}, 'Event Server', 'Need servers for upcoming corporate events. Experience in food service preferred but not required.', 'events', 'one-time', 'Kigali', '10,000-15,000 RWF/day', 'Professional appearance, Ability to stand for long periods, Team player', 'Serve food and beverages, Set up and clean event spaces, Interact with guests', '$deadline', 1),
-            ({$employers[1]}, 'Data Entry Specialist', 'Looking for detail-oriented individuals to assist with data entry projects. Flexible hours available.', 'office', 'part-time', 'Kigali', '80,000-100,000 RWF/month', 'Fast typing skills, Attention to detail, Experience with Excel', 'Input data accurately, Verify information, Maintain databases', '$deadline', 1),
-            ({$employers[2]}, 'Inventory Assistant', 'Seasonal position helping with inventory management during our busy period. Training provided.', 'retail', 'seasonal', 'Nyanza', '45,000-55,000 RWF/month', 'Organizational skills, Basic computer knowledge, Ability to lift up to 10kg', 'Count stock, Update inventory records, Assist with deliveries', '$deadline', 1)";
+        $sql = "INSERT INTO jobs (employer_id, job_title, job_description, job_type, location, salary_range, requirements, responsibilities, application_deadline, is_featured) VALUES
+            ({$employers[0]}, 'Weekend Barista', 'Looking for a talented barista to join our weekend team. Experience with espresso machines and latte art preferred.', 'part-time', 'Kigali', '50,000-70,000 RWF/month', 'Previous experience as barista, Customer service skills, Ability to work weekends', 'Prepare coffee drinks, Maintain cleanliness, Handle customer orders', '$deadline', 1),
+            ({$employers[1]}, 'Junior Web Developer', 'Need a part-time web developer to assist with ongoing projects. Knowledge of HTML, CSS, and JavaScript required.', 'contract', 'Kigali', '100,000-150,000 RWF/month', 'HTML/CSS/JavaScript skills, Basic understanding of PHP or Python, Portfolio of previous work', 'Develop website features, Debug code, Implement responsive designs', '$deadline', 1),
+            ({$employers[2]}, 'Retail Sales Associate', 'Seeking friendly and reliable sales associates for our busy retail store. Perfect for students or those seeking part-time work.', 'part-time', 'Nyanza', '40,000-60,000 RWF/month', 'Strong communication skills, Basic math abilities, Availability on weekends', 'Assist customers, Operate cash register, Restock merchandise', '$deadline', 1),
+            ({$employers[0]}, 'Event Server', 'Need servers for upcoming corporate events. Experience in food service preferred but not required.', 'one-time', 'Kigali', '10,000-15,000 RWF/day', 'Professional appearance, Ability to stand for long periods, Team player', 'Serve food and beverages, Set up and clean event spaces, Interact with guests', '$deadline', 1),
+            ({$employers[1]}, 'Data Entry Specialist', 'Looking for detail-oriented individuals to assist with data entry projects. Flexible hours available.', 'part-time', 'Kigali', '80,000-100,000 RWF/month', 'Fast typing skills, Attention to detail, Experience with Excel', 'Input data accurately, Verify information, Maintain databases', '$deadline', 1),
+            ({$employers[2]}, 'Inventory Assistant', 'Seasonal position helping with inventory management during our busy period. Training provided.', 'seasonal', 'Nyanza', '45,000-55,000 RWF/month', 'Organizational skills, Basic computer knowledge, Ability to lift up to 10kg', 'Count stock, Update inventory records, Assist with deliveries', '$deadline', 1)";
         
         runQuery($conn, $sql, "add sample jobs");
     }
