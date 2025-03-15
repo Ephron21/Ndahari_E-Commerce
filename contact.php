@@ -1,6 +1,20 @@
 <?php
-// Include header (using relative path for portability)
-include('includes/header.php');
+// Enable error reporting for debugging (remove in production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Start session securely
+ini_set('session.use_strict_mode', 1);
+ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Strict');
+session_start();
+
+// Include necessary files
+require_once 'includes/db_connection.php';
+require_once 'includes/functions.php';
+
+// Initialize database connection
+$conn = get_db_connection();
 
 // Initialize variables
 $formSubmitted = false;
@@ -16,6 +30,58 @@ if (isset($_SESSION['contact_form_status'])) {
     // Clear the session data
     unset($_SESSION['contact_form_status']);
 }
+
+// Default language
+$language = $_GET['lang'] ?? 'en';
+if (!in_array($language, ['en', 'rw', 'sw'])) {
+    $language = 'en';
+}
+
+// Multilingual FAQ content
+$faq_content = [
+    'en' => [
+        ['question' => 'How do I apply for a job?', 
+         'answer' => 'Create an account, complete your profile, and apply directly to job listings that match your skills and preferences. Our system will guide you through the entire process.'],
+        ['question' => 'How do I post a job?', 
+         'answer' => 'Register as an employer, complete your company profile, and use the "Post a Job" option to create your listing. You can set requirements, compensation, and see applications directly through your dashboard.'],
+        ['question' => 'Is there a fee for using Ndahari?', 
+         'answer' => 'Job seekers can use Ndahari for free. Employers pay a small fee only when they successfully hire through our platform. There are no upfront costs or subscription fees.'],
+        ['question' => 'How are payments handled?', 
+         'answer' => 'Our secure payment system handles all transactions. Employers fund jobs upfront, and workers are paid promptly after job completion. We support various payment methods, including mobile money.'],
+        ['question' => 'How can I update my profile?', 
+         'answer' => 'Log into your account, navigate to "Profile Settings," and click on "Edit Profile." Make your desired changes and click "Save" to update your information.'],
+        ['question' => 'Can I apply for multiple jobs at once?', 
+         'answer' => 'Yes, you can apply for multiple jobs simultaneously. Each application is processed independently, giving you more opportunities to find the right position.']
+    ],
+    'rw' => [
+        ['question' => 'Nakora iki kugira ngo mpisemo akazi?', 
+         'answer' => 'Fungura konti, uzuza umwirondoro wawe, maze wisabe ku myanya y\'imirimo ihura n\'ubushobozi n\'ibyo ukunda. Sisitemu yacu izakuyobora mu gikorwa cyose.'],
+        ['question' => 'Nakora iki kugira nshyireho akazi?', 
+         'answer' => 'Iyandikishe nk\'umukoresha, uzuza imyirondoro y\'isosiyete yawe, hanyuma ukoreshe amahitamo ya "Post a Job" kugira ngo ushyireho itangazo ryawe. Ushobora gushyiraho ibisabwa, ibihembo, no kubona ubusabe mu mbonankubone binyuze ku kibaho cyawe.'],
+        ['question' => 'Hari amafaranga yo gukoresha Ndahari?', 
+         'answer' => 'Abashakisha akazi bashobora gukoresha Ndahari ku buntu. Abakoresha bishyura amafaranga make gusa iyo bihaye imirimo binyuze ku bubiko bwacu. Nta mafaranga yo mbere cyangwa amafaranga yo kwiyandikisha.'],
+        ['question' => 'Ubwishyu bukorwa bute?', 
+         'answer' => 'Sisitemu yacu y\'ubwishyu bwizewe ikora imirimo yose. Abakoresha bashyiramo imirimo mbere, kandi abakozi bashyirwa mu kazi vuba nyuma yo kurangiza akazi. Dushyigikira uburyo butandukanye bwo kwishyura, harimo amafaranga ya mobile.'],
+        ['question' => 'Nabasha nte kuvugurura umwirondoro wanjye?', 
+         'answer' => 'Injira muri konti yawe, ujye kuri "Profile Settings", hanyuma ukande kuri "Edit Profile." Kora impinduka wifuza maze ukande "Save" kugira ngo uvugurure amakuru yawe.'],
+        ['question' => 'Nshobora gusaba imirimo myinshi icyarimwe?', 
+         'answer' => 'Yego, ushobora gusaba imirimo myinshi icyarimwe. Buri busabe butunganywa ukwabwo, biguha amahirwe menshi yo kubona umwanya ukwiye.']
+    ],
+    'sw' => [
+        ['question' => 'Nitafanyaje kuomba kazi?', 
+         'answer' => 'Unda akaunti, kamilisha wasifu wako, na kutuma maombi moja kwa moja kwa machapisho ya kazi yanayolingana na ujuzi na mapendekezo yako. Mfumo wetu utakuongoza kupitia mchakato mzima.'],
+        ['question' => 'Nitafanyaje kutangaza kazi?', 
+         'answer' => 'Jisajili kama mwajiri, kamilisha wasifu wa kampuni yako, na kutumia chaguo la "Post a Job" kuunda tangazo lako. Unaweza kuweka mahitaji, fidia, na kuona maombi moja kwa moja kupitia dashibodi yako.'],
+        ['question' => 'Kuna ada ya kutumia Ndahari?', 
+         'answer' => 'Watafutaji wa kazi wanaweza kutumia Ndahari bila malipo. Waajiri wanalipa ada ndogo tu wakati wanafanikiwa kuajiri kupitia jukwaa letu. Hakuna gharama za awali au ada za usajili.'],
+        ['question' => 'Malipo yanashughulikiwa vipi?', 
+         'answer' => 'Mfumo wetu salama wa malipo hushughulikia miamala yote. Waajiri hufadhili kazi mapema, na wafanyakazi hulipwa mara moja baada ya kukamilika kwa kazi. Tunaunga mkono njia mbalimbali za malipo, ikiwa ni pamoja na pesa za simu.'],
+        ['question' => 'Ninawezaje kusasisha wasifu wangu?', 
+         'answer' => 'Ingia katika akaunti yako, nenda kwenye "Profile Settings," na bofya "Edit Profile." Fanya mabadiliko unayotaka na bofya "Save" ili kusasisha maelezo yako.'],
+        ['question' => 'Ninaweza kuomba kazi nyingi kwa wakati mmoja?', 
+         'answer' => 'Ndio, unaweza kuomba kazi nyingi kwa wakati mmoja. Kila ombi linachakatwa kwa njia huru, kukupa fursa zaidi za kupata nafasi sahihi.']
+    ]
+];
 
 // Process form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -53,6 +119,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $formSubmitted = true;
     }
 }
+
+// Include header
+include('includes/header.php');
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +132,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Contact Us - Ndahari</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="public/css/contact.css">
+    <style>
+        /* Language Selector Styles */
+        .language-selector {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        .language-btn {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .language-btn.active {
+            background: #4361ee;
+            color: white;
+            border-color: #4361ee;
+        }
+        .language-btn:hover {
+            background: #e9ecef;
+        }
+        .language-btn.active:hover {
+            background: #3a56d4;
+        }
+    </style>
 </head>
 <body>
     <!-- Toast Notifications Container -->
@@ -71,6 +169,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <!-- Main Content Section -->
     <div class="container">
+        <!-- Language Selector -->
+        <div class="language-selector">
+            <a href="?lang=en" class="language-btn <?php echo $language === 'en' ? 'active' : ''; ?>">English</a>
+            <a href="?lang=rw" class="language-btn <?php echo $language === 'rw' ? 'active' : ''; ?>">Kinyarwanda</a>
+            <a href="?lang=sw" class="language-btn <?php echo $language === 'sw' ? 'active' : ''; ?>">Kiswahili</a>
+        </div>
+
         <!-- Contact Section Header -->
         <div class="contact-header">
             <h1>Contact Us</h1>
@@ -219,33 +324,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="faq-section">
             <h2>Frequently Asked Questions</h2>
             <div class="faq-grid">
-                <div class="faq-item" data-faq="1">
-                    <div class="faq-question">How do I apply for a job?</div>
+                <?php foreach ($faq_content[$language] as $index => $faq): ?>
+                <div class="faq-item" data-faq="<?php echo $index + 1; ?>">
+                    <div class="faq-question"><?php echo htmlspecialchars($faq['question']); ?></div>
                     <div class="faq-answer">
-                        <p>Create an account, complete your profile, and apply directly to job listings that match your skills and preferences. Our system will guide you through the entire process.</p>
+                        <p><?php echo htmlspecialchars($faq['answer']); ?></p>
                     </div>
                 </div>
-
-                <div class="faq-item" data-faq="2">
-                    <div class="faq-question">How do I post a job?</div>
-                    <div class="faq-answer">
-                        <p>Register as an employer, complete your company profile, and use the "Post a Job" option to create your listing. You can set requirements, compensation, and see applications directly through your dashboard.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item" data-faq="3">
-                    <div class="faq-question">Is there a fee for using Ndahari?</div>
-                    <div class="faq-answer">
-                        <p>Job seekers can use Ndahari for free. Employers pay a small fee only when they successfully hire through our platform. There are no upfront costs or subscription fees.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item" data-faq="4">
-                    <div class="faq-question">How are payments handled?</div>
-                    <div class="faq-answer">
-                        <p>Our secure payment system handles all transactions. Employers fund jobs upfront, and workers are paid promptly after job completion. We support various payment methods, including mobile money.</p>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
 
@@ -466,14 +552,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         // Remove typing indicator
                         typingIndicator.remove();
                         
-                        // Add bot reply
-                        const botReplies = [
-                            "Thank you for your message! Our team will get back to you shortly.",
-                            "I understand your query. Let me connect you with a specialist.",
-                            "Thanks for reaching out! How else can I assist you today?",
-                            "That's a great question. We offer several solutions for that.",
-                            "I'll make sure your inquiry gets to the right department."
-                        ];
+                        // Get responses based on current language
+                        let botReplies;
+                        const currentLang = '<?php echo $language; ?>';
+                        
+                        if (currentLang === 'rw') {
+                            botReplies = [
+                                "Murakoze ubutumwa bwanyu! Ikipe yacu izabasubiza vuba.",
+                                "Numvise ikibazo cyanyu. Reka mbashyire ku muntu wi buhanzi.",
+                                "Murakoze kutwegera! Ni gute nonaha nashobora kubafasha?",
+                                "Ni ikibazo cyiza. Dufite ibisubizo byinshi kuri icyo kibazo.",
+                                "Nzareba ko ikibazo cyanyu kigera ku shami ryabugenewe."
+                            ];
+                        } else if (currentLang === 'sw') {
+                            botReplies = [
+                                "Asante kwa ujumbe wako! Timu yetu itawasiliana nawe hivi karibuni.",
+                                "Ninaelewa swali lako. Wacha nikuunganishe na mtaalamu.",
+                                "Asante kwa kuwasiliana! Ninawezaje kukusaidia leo?",
+                                "Hilo ni swali zuri. Tunazo suluhisho kadhaa kwa hilo.",
+                                "Nitahakikisha kuwa swali lako linafikia idara sahihi."
+                            ];
+                        } else {
+                            botReplies = [
+                                "Thank you for your message! Our team will get back to you shortly.",
+                                "I understand your query. Let me connect you with a specialist.",
+                                "Thanks for reaching out! How else can I assist you today?",
+                                "That's a great question. We offer several solutions for that.",
+                                "I'll make sure your inquiry gets to the right department."
+                            ];
+                        }
                         
                         const randomReply = botReplies[Math.floor(Math.random() * botReplies.length)];
                         
@@ -542,7 +649,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </script>
 
     <?php
-    // Include footer (using relative path for portability)
+    // Include footer
     include('includes/footer.php');
     ?>
 </body>

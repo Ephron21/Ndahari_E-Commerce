@@ -1,6 +1,6 @@
 /* Footer Styles */
 .site-footer {
-    background: linear-gradient(135deg, #000000, #1a1a1a);
+    background: #34495e;
     color: #e6f7ff;
     padding: 60px 0 20px;
     position: relative;
@@ -31,14 +31,14 @@
   }
   
   .footer-column:hover {
-    background: rgba(0, 255, 255, 0.05);
+    background: rgba(191, 224, 224, 0.05);
     transform: translateY(-5px);
     border-radius: 10px;
     padding: 20px;
   }
   
   .footer-column h3 {
-    color: #00ffff;
+    color: #0d7ded;;
     font-size: 22px;
     margin-bottom: 20px;
     position: relative;
@@ -52,7 +52,7 @@
     left: 0;
     width: 50px;
     height: 3px;
-    background: #00ffff;
+    background: #0d7ded;;
     border-radius: 2px;
     transform: scaleX(0);
     transform-origin: left;
@@ -90,7 +90,7 @@
   }
   
   .social-links a:hover {
-    background: #00ffff;
+    background: #0d7ded;;
     color: #000000;
     transform: rotate(360deg) scale(1.2);
   }
@@ -134,7 +134,7 @@
   }
   
   .footer-column ul a:hover {
-    color: #00ffff;
+    color: #0d7ded;
     transform: translateX(10px);
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
   }
@@ -200,8 +200,8 @@
     bottom: 30px;
     width: 50px;
     height: 50px;
-    background: #00ffff;
-    color: #000000;
+    background: #0d7ded;;
+    color: #c9ecf4;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -237,7 +237,7 @@
     background: #34495e;
     z-index: 1000;
     transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+    box-shadow: -5px 0 15px rgba(117, 107, 107, 0.2);
     overflow-y: auto;
   }
   
@@ -355,7 +355,7 @@
     opacity: 0;
     transform-origin: bottom right;
     transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-    border: 1px solid #00ffff;
+    border: 1px solid #0d7ded;;
   }
   
   .email-subscribe.show {
@@ -381,7 +381,7 @@
   .email-form input {
     flex: 1;
     padding: 10px;
-    border: 1px solid #00ffff;
+    border: 1px solid #0d7ded;;
     border-radius: 4px 0 0 4px;
     background: rgba(255, 255, 255, 0.1);
     color: #e6f7ff;
@@ -394,7 +394,7 @@
   }
   
   .email-form button {
-    background: #00ffff;
+    background: #0d7ded;;
     color: #000000;
     border: none;
     padding: 10px 15px;
@@ -633,7 +633,7 @@
   }
   
   .stat-item:hover {
-    border-color: #00ffff;
+    border-color: #0d7ded;;
     transform: translateY(-10px) scale(1.05);
     box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
   }
@@ -641,7 +641,7 @@
   .counter {
     font-size: 42px;
     font-weight: 700;
-    color: #00ffff;
+    color: #0d7ded;;
     margin-bottom: 10px;
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
     position: relative;
@@ -722,9 +722,9 @@
 
   /* Add glowing effect for interactive elements */
   @keyframes glow {
-    0% { box-shadow: 0 0 5px #00ffff; }
-    50% { box-shadow: 0 0 20px #00ffff; }
-    100% { box-shadow: 0 0 5px #00ffff; }
+    0% { box-shadow: 0 0 5px #0d7ded;; }
+    50% { box-shadow: 0 0 20px #0d7ded;; }
+    100% { box-shadow: 0 0 5px #0d7ded;; }
   }
 
   .footer-column input:focus,
@@ -762,17 +762,17 @@
 
   /* Add neon text effect on hover */
   .neon-text:hover {
-    color: #00ffff;
+    color: #0d7ded;;
     text-shadow: 
-        0 0 5px #00ffff,
-        0 0 10px #00ffff,
-        0 0 20px #00ffff;
+        0 0 5px #0d7ded;,
+        0 0 10px #0d7ded;,
+        0 0 20px #0d7ded;;
   }
 
   /* Employer Dashboard Section */
 .employer-dashboard {
   background: rgba(0, 0, 0, 0.8);
-  border: 1px solid #00ffff;
+  border: 1px solid #0d7ded;;
   border-radius: 10px;
   padding: 20px;
   margin-bottom: 30px;
@@ -780,7 +780,7 @@
 }
 
 .employer-dashboard h3 {
-  color: #00ffff;
+  color: #0d7ded;;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
@@ -811,13 +811,13 @@
 
 .employer-action-card:hover {
   transform: translateY(-5px);
-  border-color: #00ffff;
+  border-color: #0d7ded;;
   box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
 }
 
 .employer-action-card i {
   font-size: 24px;
-  color: #00ffff;
+  color: #0d7ded;;
   margin-bottom: 10px;
   transition: all 0.3s ease;
 }
@@ -843,7 +843,7 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  background: #00ffff;
+  background: #0d7ded;;
   color: #000;
   border-radius: 50%;
   width: 24px;
@@ -868,7 +868,7 @@
 }
 
 .quick-stat-value {
-  color: #00ffff;
+  color: #0d7ded;;
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 5px;
@@ -915,7 +915,7 @@
 }
 
 .message-sender {
-  color: #00ffff;
+  color: #0d7ded;;
   font-size: 14px;
   font-weight: 500;
 }
@@ -958,13 +958,13 @@
 
 .tool-button:hover {
   background: rgba(0, 255, 255, 0.2);
-  border-color: #00ffff;
+  border-color: #0d7ded;;
   transform: translateY(-2px);
 }
 
 .tool-button i {
   font-size: 16px;
-  color: #00ffff;
+  color: #0d7ded;;
 }
 
 /* Active Jobs Preview */
@@ -984,12 +984,12 @@
 }
 
 .job-mini-card:hover {
-  border-color: #00ffff;
+  border-color: #0d7ded;;
   background: rgba(0, 0, 0, 0.4);
 }
 
 .job-mini-info h5 {
-  color: #00ffff;
+  color: #0d7ded;;
   margin: 0 0 5px 0;
 }
 
@@ -1008,7 +1008,7 @@
 .job-mini-action button {
   background: none;
   border: none;
-  color: #00ffff;
+  color: #0d7ded;;
   cursor: pointer;
   padding: 5px;
   transition: all 0.3s ease;

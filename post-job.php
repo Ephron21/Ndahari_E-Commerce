@@ -12,61 +12,108 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'employer') {
 $error = '';
 $success = '';
 
+// Check if hours_per_week column exists
+try {
+    $checkColumn = $pdo->query("SHOW COLUMNS FROM jobs LIKE 'hours_per_week'");
+    $hoursColumnExists = $checkColumn->rowCount() > 0;
+} catch (PDOException $e) {
+    $hoursColumnExists = false;
+}
+
 // Process form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         // Validate input
-        $required_fields = ['title', 'description', 'job_type', 'location', 'salary_range', 'requirements'];
+        $required_fields = ['title', 'description', 'job_type', 'location', 'salary_range', 'requirements', 'responsibilities', 'deadline'];
         foreach ($required_fields as $field) {
             if (empty($_POST[$field])) {
-                throw new Exception("All fields are required");
+                throw new Exception("All fields marked with * are required");
             }
         }
 
         // Validate job type
-        $valid_job_types = ['full_time', 'part_time', 'temporary', 'contract', 'weekend', 'evening', 'seasonal', 'internship'];
-        if (!in_array($_POST['job_type'], $valid_job_types)) {
-            throw new Exception("Invalid job type. Must be one of: " . implode(', ', $valid_job_types));
+        $valid_job_types = [
+            'IT & Software', 'Education & Training', 'Healthcare', 'Design & Creative',
+            'Customer Service', 'Sales & Marketing', 'Administrative', 'Hospitality & Tourism',
+            'Retail', 'Finance & Accounting', 'Engineering', 'Other'
+        ];
+        
+        $job_type = trim($_POST['job_type']);
+        if (!in_array($job_type, $valid_job_types)) {
+            throw new Exception("Invalid job type. Please select from the provided options.");
         }
 
         // Sanitize input
         $job_title = htmlspecialchars(trim($_POST['title']));
         $job_description = htmlspecialchars(trim($_POST['description']));
-        $job_type = htmlspecialchars(trim($_POST['job_type']));
         $location = htmlspecialchars(trim($_POST['location']));
         $salary_range = htmlspecialchars(trim($_POST['salary_range']));
         $requirements = htmlspecialchars(trim($_POST['requirements']));
+        $responsibilities = htmlspecialchars(trim($_POST['responsibilities']));
         $deadline = !empty($_POST['deadline']) ? $_POST['deadline'] : null;
+        
+        // Only get hours_per_week if the column exists
+        $hours_per_week = ($hoursColumnExists && !empty($_POST['hours_per_week'])) ? 
+                          intval($_POST['hours_per_week']) : null;
+
+        // Prepare SQL based on whether hours_per_week column exists
+        if ($hoursColumnExists) {
+            $sql = "
+                INSERT INTO jobs (
+                    employer_id, title, description, job_type, 
+                    location, salary_range, hours_per_week, requirements, responsibilities,
+                    application_deadline, status, posted_date
+                ) VALUES (
+                    :employer_id, :title, :description, :job_type,
+                    :location, :salary_range, :hours_per_week, :requirements, :responsibilities,
+                    :deadline, 'open', NOW()
+                )
+            ";
+            $params = [
+                'employer_id' => $_SESSION['user_id'],
+                'title' => $job_title,
+                'description' => $job_description,
+                'job_type' => $job_type,
+                'location' => $location,
+                'salary_range' => $salary_range,
+                'hours_per_week' => $hours_per_week,
+                'requirements' => $requirements,
+                'responsibilities' => $responsibilities,
+                'deadline' => $deadline
+            ];
+        } else {
+            $sql = "
+                INSERT INTO jobs (
+                    employer_id, title, description, job_type, 
+                    location, salary_range, requirements, responsibilities,
+                    application_deadline, status, posted_date
+                ) VALUES (
+                    :employer_id, :title, :description, :job_type,
+                    :location, :salary_range, :requirements, :responsibilities,
+                    :deadline, 'open', NOW()
+                )
+            ";
+            $params = [
+                'employer_id' => $_SESSION['user_id'],
+                'title' => $job_title,
+                'description' => $job_description,
+                'job_type' => $job_type,
+                'location' => $location,
+                'salary_range' => $salary_range,
+                'requirements' => $requirements,
+                'responsibilities' => $responsibilities,
+                'deadline' => $deadline
+            ];
+        }
 
         // Insert job posting
-        $stmt = $pdo->prepare("
-            INSERT INTO jobs (
-                employer_id, title, description, job_type, 
-                location, salary_range, requirements, responsibilities,
-                application_deadline, status, posted_date
-            ) VALUES (
-                :employer_id, :title, :description, :job_type,
-                :location, :salary_range, :requirements, :responsibilities,
-                :deadline, 'open', NOW()
-            )
-        ");
-
-        $stmt->execute([
-            'employer_id' => $_SESSION['user_id'],
-            'title' => $job_title,
-            'description' => $job_description,
-            'job_type' => $job_type,
-            'location' => $location,
-            'salary_range' => $salary_range,
-            'requirements' => $requirements,
-            'responsibilities' => $requirements,
-            'deadline' => $deadline
-        ]);
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
 
         $success = "Job posted successfully!";
         
-        // Redirect to manage jobs page after successful posting
-        header("Location: manage-jobs.php?success=1");
+        // Redirect to home page after successful posting
+        header("Location: index.php?success=1");
         exit();
 
     } catch (Exception $e) {
@@ -91,56 +138,139 @@ require_once 'includes/header.php';
         <?php endif; ?>
 
         <form method="POST" action="" class="job-form">
-            <div class="form-group">
-                <label for="title">Job Title *</label>
-                <input type="text" id="title" name="title" class="form-control" 
-                       value="<?php echo $_POST['title'] ?? ''; ?>" required>
+            <div class="form-tips">
+                <h3>Tips for Creating an Effective Job Posting</h3>
+                <p>Well-structured job postings attract more qualified candidates. Follow these guidelines:</p>
+                <ul>
+                    <li>Be specific and detailed in your descriptions</li>
+                    <li>Use bullet points (•) for requirements and responsibilities</li>
+                    <li>Include information about work schedule and location</li>
+                    <li>Clearly state qualifications and experience needed</li>
+                </ul>
             </div>
 
             <div class="form-group">
-                <label for="job_type">Job Type *</label>
+                <label for="title">Job Title *</label>
+                <input type="text" id="title" name="title" class="form-control" 
+                       placeholder="e.g., Part-Time Web Developer, Weekend Nurse Assistant"
+                       value="<?php echo $_POST['title'] ?? ''; ?>" required>
+                <small>Be specific and include key terms job seekers might search for</small>
+            </div>
+
+            <div class="form-group">
+                <label for="job_type">Job Category *</label>
                 <select id="job_type" name="job_type" class="form-control" required>
-                    <option value="">Select Job Type</option>
-                    <option value="full_time">Full Time</option>
-                    <option value="part_time">Part Time</option>
-                    <option value="temporary">Temporary</option>
-                    <option value="contract">Contract</option>
-                    <option value="weekend">Weekend</option>
-                    <option value="evening">Evening</option>
-                    <option value="seasonal">Seasonal</option>
-                    <option value="internship">Internship</option>
+                    <option value="">Select Job Category</option>
+                    <option value="IT & Software">IT & Software</option>
+                    <option value="Education & Training">Education & Training</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Design & Creative">Design & Creative</option>
+                    <option value="Customer Service">Customer Service</option>
+                    <option value="Sales & Marketing">Sales & Marketing</option>
+                    <option value="Administrative">Administrative</option>
+                    <option value="Hospitality & Tourism">Hospitality & Tourism</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Finance & Accounting">Finance & Accounting</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Other">Other</option>
                 </select>
+                <small>Choose the category that best matches the job</small>
             </div>
 
             <div class="form-group">
                 <label for="location">Location *</label>
                 <input type="text" id="location" name="location" class="form-control" 
+                       placeholder="e.g., Nairobi, Mombasa, Kisumu"
                        value="<?php echo $_POST['location'] ?? ''; ?>" required>
+                <small>Specify the city or region where the job is located</small>
             </div>
 
             <div class="form-group">
                 <label for="salary_range">Salary Range *</label>
                 <input type="text" id="salary_range" name="salary_range" class="form-control" 
-                       placeholder="e.g., $50,000 - $70,000" 
+                       placeholder="e.g., 30,000 - 45,000 KSH per month" 
                        value="<?php echo $_POST['salary_range'] ?? ''; ?>" required>
+                <small>Including salary information increases application rates</small>
             </div>
+
+            <?php if ($hoursColumnExists): ?>
+            <div class="form-group">
+                <label for="hours_per_week">Hours Per Week *</label>
+                <input type="number" id="hours_per_week" name="hours_per_week" class="form-control"
+                       min="1" max="40" placeholder="e.g., 20"
+                       value="<?php echo $_POST['hours_per_week'] ?? ''; ?>" required>
+                <small>For part-time positions, typically between 10-30 hours</small>
+            </div>
+            <?php endif; ?>
 
             <div class="form-group">
                 <label for="description">Job Description *</label>
                 <textarea id="description" name="description" class="form-control" 
-                          rows="6" required><?php echo $_POST['description'] ?? ''; ?></textarea>
+                          rows="8" required placeholder="Provide a detailed overview of the job. Include:
+
+• Brief introduction about your company
+• Overview of the role and its importance
+• Work schedule (hours per week, days, shifts)
+• Work location (office, remote, hybrid)
+• Contract type and duration
+
+Example:
+[Your Company] is seeking a [Job Title] to join our team. This position offers flexible hours and the opportunity to work on [type of projects/tasks].
+
+The ideal candidate will have [key skills/qualities]. This role is perfect for professionals looking to [benefit of the job].
+
+Hours: [X] hours per week
+Location: [Location] (with [any remote options])
+Contract: [contract details]"><?php echo $_POST['description'] ?? ''; ?></textarea>
+                <small>A well-written description helps attract qualified candidates</small>
             </div>
 
             <div class="form-group">
                 <label for="requirements">Requirements *</label>
                 <textarea id="requirements" name="requirements" class="form-control" 
-                          rows="4" required><?php echo $_POST['requirements'] ?? ''; ?></textarea>
+                          rows="8" required placeholder="List qualifications needed for this role. Use bullet points (•) for better readability:
+
+• Education requirements
+• Years of experience
+• Technical skills
+• Certifications
+• Soft skills
+• Language proficiency
+
+Example:
+• Bachelor's degree in [field] or equivalent experience
+• Minimum [X] years of experience in [relevant area]
+• Proficiency in [specific skills/tools]
+• Strong communication and teamwork abilities
+• [Any certifications or specific requirements]"><?php echo $_POST['requirements'] ?? ''; ?></textarea>
+                <small>Be clear about which requirements are essential vs. preferred</small>
             </div>
 
             <div class="form-group">
-                <label for="deadline">Application Deadline</label>
+                <label for="responsibilities">Responsibilities *</label>
+                <textarea id="responsibilities" name="responsibilities" class="form-control" 
+                          rows="8" required placeholder="List the main duties and tasks for this position. Use bullet points (•) for better readability:
+
+• Daily tasks and activities
+• Projects they will work on
+• Teams they will collaborate with
+• Reporting structure
+• Goals and objectives
+
+Example:
+• [Specific task or responsibility]
+• Collaborate with [team/department] to [achieve what]
+• Maintain [systems/records/equipment]
+• Report to [position] on [frequency/basis]
+• Ensure [quality/compliance/standards]"><?php echo $_POST['responsibilities'] ?? ''; ?></textarea>
+                <small>Be specific about what the job entails day-to-day</small>
+            </div>
+
+            <div class="form-group">
+                <label for="deadline">Application Deadline *</label>
                 <input type="date" id="deadline" name="deadline" class="form-control" 
-                       value="<?php echo $_POST['deadline'] ?? ''; ?>">
+                       value="<?php echo $_POST['deadline'] ?? ''; ?>" required>
+                <small>Recommended: 2-4 weeks from posting date</small>
             </div>
 
             <div class="form-actions">
@@ -161,6 +291,7 @@ require_once 'includes/header.php';
 .post-job h1 {
     margin-bottom: 2rem;
     color: #333;
+    text-align: center;
 }
 
 .job-form {
@@ -189,16 +320,52 @@ require_once 'includes/header.php';
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
+    font-family: inherit;
+}
+
+.form-group small {
+    display: block;
+    color: #666;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
 }
 
 textarea.form-control {
     resize: vertical;
+    line-height: 1.5;
 }
 
 .form-control:focus {
     border-color: #007bff;
     outline: none;
     box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.form-tips {
+    background-color: #f0f7ff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #007bff;
+}
+
+.form-tips h3 {
+    margin-top: 0;
+    color: #0056b3;
+    font-size: 1.2rem;
+}
+
+.form-tips p {
+    margin-bottom: 0.75rem;
+}
+
+.form-tips ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.form-tips li {
+    margin-bottom: 0.5rem;
 }
 
 .form-actions {
@@ -215,6 +382,7 @@ textarea.form-control {
     cursor: pointer;
     text-decoration: none;
     transition: all 0.3s ease;
+    font-weight: 500;
 }
 
 .btn-primary {
